@@ -1,3 +1,3 @@
-module github.com/Pandaknight2021/tinyPool
+module github.com/pandaknight2021/tinyPool
 
 go 1.15
