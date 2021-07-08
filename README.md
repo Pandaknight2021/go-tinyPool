@@ -32,7 +32,7 @@ func main() {
 
 
 	for j := 0; j < 10 ; j++  {
-		wp.Submit(func() {
+		p.Submit(func() {
 			demofn()
 			wg.Done()
 		}, false)
