@@ -8,7 +8,7 @@ Concurrency limiting goroutine pool. Limits the concurrency of task execution, n
 ## Installation
 To install this package, you need to setup your Go workspace.  The simplest way to install the library is to run:
 ```
-$ go get github.com/Pandaknight2021/go-tinyPool
+$ go get github.com/Pandaknight2021/tinyPool
 ```
 
 ## Example
@@ -18,7 +18,7 @@ package main
 import (
 	"time"
     	"sync"
-	"github.com/Pandaknight2021/go-tinyPool"
+	"github.com/Pandaknight2021/tinyPool"
 )
 
 func demofn(){
