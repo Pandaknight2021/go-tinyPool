@@ -8,7 +8,7 @@ License: MIT
 ## Installation
 To install this package, you need to setup your Go workspace.  The simplest way to install the library is to run:
 ```
-$ go get github.com/Pandaknight2021/tinyPool
+$ go get github.com/pandaknight2021/tinyPool
 ```
 
 ## Example
@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Pandaknight2021/tinyPool"
+	"github.com/pandaknight2021/tinyPool"
 )
 
 func demofn() {
