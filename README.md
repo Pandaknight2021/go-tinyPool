@@ -16,29 +16,34 @@ $ go get github.com/Pandaknight2021/tinyPool
 package main
 
 import (
+	"fmt"
+	"sync"
 	"time"
-    	"sync"
+
 	"github.com/Pandaknight2021/tinyPool"
 )
 
-func demofn(){
-    time.Sleep(10* time.Millisecond)
+func demofn() {
+	time.Sleep(10 * time.Millisecond)
+	fmt.Println("demo")
 }
 
 func main() {
-    var wg sync.WaitGroup
-	p, _ := NewPool(10)
+	var wg sync.WaitGroup
+	p, _ := tinyPool.NewPool(10)
 	defer p.Close()
 
-
-	for j := 0; j < 10 ; j++  {
+	for j := 0; j < 10; j++ {
+		wg.Add(1)
 		p.Submit(func() {
 			demofn()
 			wg.Done()
 		}, false)
 	}
-    wg.Wait()
+	wg.Wait()
+	fmt.Println("done")
 }
+
 ```
 ## Benchmark
 
