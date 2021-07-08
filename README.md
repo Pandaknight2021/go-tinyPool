@@ -1,8 +1,8 @@
 # tinyPool
+Concurrency limiting goroutine pool. Limits the concurrency of task execution, not the number of tasks queued. submitting tasks can be sync/async mode, no matter how many tasks are queued.
+
 
 License: MIT
-
-Concurrency limiting goroutine pool. Limits the concurrency of task execution, not the number of tasks queued. submitting tasks can be sync/async mode, no matter how many tasks are queued.
 
 
 ## Installation
