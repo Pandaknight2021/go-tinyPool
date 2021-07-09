@@ -29,6 +29,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/pandaknight2021/queue"
 )
 
 const (
@@ -42,6 +44,10 @@ type Pool struct {
 
 	//currently running goroutines
 	running int32
+
+	idle int32
+
+	q *queue.MpscQueue
 
 	//task queue -> task
 	task chan func()
@@ -73,52 +79,53 @@ func NewPool(size int) (*Pool, error) {
 		expiry:   expireTimeout,
 		isClosed: false,
 		jobNum:   0,
+		idle:     0,
+		q:        queue.NewMpscQueue(),
 	}
 
-	go p.monitor()
+	go p.dispatch()
 
 	return p, nil
 }
 
-func (p *Pool) Submit(task func(), syncMode bool) error {
+func (p *Pool) Submit(task func()) error {
 	if p.isClosed {
 		return errors.New("pool closed")
 	}
 
 	if task != nil {
-		if syncMode {
-			doneChan := make(chan struct{})
-			v := func() {
-				task()
-				close(doneChan)
+		running := p.Running()
+		if running < p.capacity {
+			if atomic.CompareAndSwapInt32(&p.running, running, running+1) {
+				p.startOneWorker()
 			}
-
-			running := p.Running()
-			if running < p.capacity {
-				if atomic.CompareAndSwapInt32(&p.running, running, 1) {
-					p.startOneWorker()
-				}
-			}
-			p.task <- v
-			atomic.AddInt32(&p.jobNum, 1)
-			<-doneChan
-		} else {
-			running := p.Running()
-			if running < p.capacity {
-				if atomic.CompareAndSwapInt32(&p.running, running, running+1) {
-					p.startOneWorker()
-				}
-			}
-			p.task <- task
-			atomic.AddInt32(&p.jobNum, 1)
 		}
+
+		if idle := atomic.LoadInt32(&p.idle); idle > 0 {
+			p.task <- task
+		} else {
+			p.q.Push(task)
+		}
+
+		atomic.AddInt32(&p.jobNum, 1)
 	}
 	return nil
 }
 
-func (p *Pool) monitor() {
+func (p *Pool) dispatch() {
 	ticker := time.NewTicker(time.Duration(p.expiry))
 	defer ticker.Stop()
+
+	go func() {
+		for !p.isClosed {
+			if p.q.Size() > 0 {
+				task := p.q.Pop()
+				p.task <- task.(func())
+			} else {
+				time.Sleep(10 * time.Microsecond)
+			}
+		}
+	}()
 
 outer:
 	for {
@@ -158,12 +165,18 @@ func (p *Pool) stopOneWorker() {
 
 func (p *Pool) worker() {
 	p.wg.Add(1)
-	defer atomic.AddInt32(&p.running, -1)
 	defer p.wg.Done()
+
+	atomic.AddInt32(&p.idle, 1)
+	defer atomic.AddInt32(&p.idle, -1)
+
+	defer atomic.AddInt32(&p.running, -1)
 
 	for fn := range p.task {
 		if fn != nil {
+			atomic.AddInt32(&p.idle, -1)
 			fn()
+			atomic.AddInt32(&p.idle, 1)
 		} else {
 			break
 		}

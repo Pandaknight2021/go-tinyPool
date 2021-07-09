@@ -38,7 +38,7 @@ func main() {
 		p.Submit(func() {
 			demofn()
 			wg.Done()
-		}, false)
+		})
 	}
 	wg.Wait()
 	fmt.Println("done")
@@ -49,18 +49,23 @@ func main() {
 
 test env:  
 cpu: i5 8th    memory:  16G  
-poolsize: 5k   task: 1M  
+poolsize: 5k   task: 1M (fast) / 100k(slow)
   
 ``` shell
-goos: linux
+ggoos: linux
 goarch: amd64
-pkg: tinyPool
-BenchmarkGoroutines
-BenchmarkGoroutines-8   	       1	15557095000 ns/op	380919128 B/op	 1802662 allocs/op
-BenchmarkTinyPool
-BenchmarkTinyPool-8     	       1	4505262600 ns/op	16809344 B/op	 1009266 allocs/op
+pkg: github.com/pandaknight2021/tinyPool
+cpu: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz
+BenchmarkGoroutines_fast
+BenchmarkGoroutines_fast-8   	       1	9527376700 ns/op	215811600 B/op	 1315699 allocs/op
+BenchmarkTinyPool_fast
+BenchmarkTinyPool_fast-8     	       1	6687470500 ns/op	16882824 B/op	 1010441 allocs/op
+BenchmarkGoroutines_slow
+BenchmarkGoroutines_slow-8   	       1	130869875900 ns/op	 7999920 B/op	   99999 allocs/op
+BenchmarkTinyPool_slow
+BenchmarkTinyPool_slow-8     	       1	139006410300 ns/op	 2439000 B/op	  109604 allocs/op
 PASS
-ok  	tinyPool	20.672s
+ok  	github.com/pandaknight2021/tinyPool	286.839s
 
 ```
 

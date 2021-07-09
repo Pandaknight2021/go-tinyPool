@@ -13,6 +13,22 @@ const (
 	MB // 1048576
 )
 
+func TestFib(t *testing.T) {
+	t0 := time.Now()
+	for j := 0; j < RunTimes; j++ {
+		Fib(100)
+	}
+
+	t.Logf("fib(100): = %v ", time.Since(t0)/RunTimes)
+
+	t0 = time.Now()
+	for j := 0; j < RunTimes; j++ {
+		Fib(1000)
+	}
+
+	t.Logf("fib(1000): = %v ", time.Since(t0)/RunTimes)
+}
+
 func TestTinyPool(t *testing.T) {
 	var wg sync.WaitGroup
 	p, _ := NewPool(PoolSize)
@@ -22,10 +38,10 @@ func TestTinyPool(t *testing.T) {
 
 	wg.Add(RunTimes)
 	for j := 0; j < RunTimes; j++ {
-		_ = p.Enqueue(func() {
-			demoFunc()
+		_ = p.Submit(func() {
+			Fib(100)
 			wg.Done()
-		}, false)
+		})
 	}
 	t.Logf("push elapsed = %v ", time.Since(t0))
 	wg.Wait()
